@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin">
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Karte"
+        android:id="@+id/karte"
+        android:onClick="selectFrag"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,13 +42,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
+        <!--<ImageView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/sound_low"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"/>
+            -->
 
         <SeekBar
             android:id="@+id/seek1"
@@ -40,8 +57,9 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:progress="20"
-            android:secondaryProgress="20" />
+            android:secondaryProgress="0"/>
 
+        <!--
         <ImageView
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -49,6 +67,7 @@
             android:src="@drawable/sound_high"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"/>
+            -->
 
 
 
@@ -99,6 +118,7 @@
         android:layout_margin="10dp"
         android:progress="20"
         android:secondaryProgress="20"/>
+    </LinearLayout>
 
 
 
