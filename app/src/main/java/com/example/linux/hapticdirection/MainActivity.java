@@ -1,6 +1,5 @@
 package com.example.linux.hapticdirection;
 
-
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -25,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         if(view==findViewById(R.id.einstellungen)){
             fragment=new FragmentSettings();
         } else{
-           fragment=new MapFragment();
+          fragment=new FragmentMaps();
         }
 
 
