@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void  selectFrag(View view){
+    public void selectFrag(View view) {
         Fragment fragment;
         if(view==findViewById(R.id.einstellungen)){
             fragment=new FragmentSettings();
