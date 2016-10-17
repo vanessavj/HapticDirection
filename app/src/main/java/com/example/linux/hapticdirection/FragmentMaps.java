@@ -1,6 +1,7 @@
 package com.example.linux.hapticdirection;
 
 import android.Manifest;
+import android.widget.TextView;
 
 import android.app.Fragment;
 import android.content.pm.PackageManager;
@@ -24,20 +25,30 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
+import android.view.View;
 
 public class FragmentMaps extends Fragment {
 
     MapView mMapView;
     private GoogleMap mGoogleMap;
     private final String bla = "bla";
+    public double dirToDest;
+    private double dist;
+    private double dir;
+
+    //TODO: get destLocation by searching
+    Location destLocation = new Location("");
+    LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        destLocation.setLatitude(destLocationPos.latitude);
+        destLocation.setLongitude(destLocationPos.longitude);
+
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
 
         mMapView = (MapView) rootView.findViewById(R.id.map);
-        Log.i(bla, "irgendwas");
+        //Log.i(bla, "irgendwas");
         mMapView.onCreate(savedInstanceState);
 
         mMapView.onResume(); // needed to get the map to display immediately
@@ -49,29 +60,19 @@ public class FragmentMaps extends Fragment {
         }
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
-        /*    @Override
-            public void onMapReady(GoogleMap mMap) {
-                mGoogleMap = mMap;
 
-                // For showing a move to my location button
-                //googleMap.setMyLocationEnabled(true);
-
-                // For dropping a marker at a point on the Map
-                LatLng sydney = new LatLng(-34, 151);
-                mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
-                // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-                mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }*/
         public void onMapReady(GoogleMap map) {
             mGoogleMap = map;
             if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mGoogleMap.setMyLocationEnabled(true);
                 LocationManager locman = (LocationManager) getActivity().getSystemService(getContext().LOCATION_SERVICE);
                 Location lastKnown = locman.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                Log.i(bla, Double.toString(lastKnown.getLongitude())+"  "+Double.toString((lastKnown.getLatitude())));
+                //Log.i(bla, Double.toString(lastKnown.getLongitude())+"  "+Double.toString((lastKnown.getLatitude())));
                 LatLng pos = new LatLng(lastKnown.getLatitude(), lastKnown.getLongitude());
-               // mGoogleMap.addMarker(new MarkerOptions().position(pos).title("Position"));
+                mGoogleMap.addMarker(new MarkerOptions().position(destLocationPos).title("Position"));
+                //TODO: Display the values on phone
+                Log.i(bla, Double.toString(lastKnown.bearingTo(destLocation)));
+                Log.i(bla, Double.toString(lastKnown.distanceTo(destLocation)));
                 CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(pos, 16);
                 mGoogleMap.moveCamera(camUp);
             }
@@ -108,4 +109,5 @@ public class FragmentMaps extends Fragment {
         super.onLowMemory();
         mMapView.onLowMemory();
     }
+
 }
