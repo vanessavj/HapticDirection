@@ -39,7 +39,8 @@
             android:layout_height="wrap_content"
             android:text="LA"
             android:layout_above="@id/left"
-            android:layout_marginLeft="60dp" />
+            android:layout_marginLeft="60dp"
+            android:onClick="ButtonPressed"/>
 
         <Button
             android:id="@+id/ahead"
@@ -59,7 +60,8 @@
             android:text="RA"
             android:layout_above="@id/right"
             android:layout_alignRight="@id/right"
-            android:layout_marginRight="60dp" />
+            android:layout_marginRight="60dp"
+            android:onClick="ButtonPressed"/>
 
         <Button
             android:id="@+id/rightbehind"
@@ -69,7 +71,8 @@
             android:text="RB"
             android:layout_below="@id/right"
             android:layout_alignRight="@id/right"
-            android:layout_marginRight="60dp" />
+            android:layout_marginRight="60dp"
+            android:onClick="ButtonPressed"/>
 
         <Button
             android:id="@+id/behind"
@@ -88,7 +91,8 @@
             android:layout_height="wrap_content"
             android:text="LB"
             android:layout_below="@id/right"
-            android:layout_marginLeft="60dp" />
+            android:layout_marginLeft="60dp"
+            android:onClick="ButtonPressed"/>
     </RelativeLayout>
 
 </LinearLayout>
