@@ -45,42 +45,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/left"
-            android:tag="l"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="L"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/ahead"
-            android:tag="a"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="A"
-            android:onClick="ButtonPressed"/>
-        <Button
-            android:id="@+id/right"
-            android:tag="r"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="R"
-            android:onClick="ButtonPressed"/>
-        <Button
-            android:id="@+id/behind"
-            android:tag="b"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="B"
-            android:onClick="ButtonPressed"/>
-    </LinearLayout>
-
     <RelativeLayout
         android:id="@+id/RelativeLayout1"
         android:layout_width="match_parent"
@@ -117,6 +81,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </RelativeLayout>
+
 
 
     <FrameLayout

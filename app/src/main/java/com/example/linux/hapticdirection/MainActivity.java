@@ -404,7 +404,21 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
 
+    public void selectFrag(View v){
+        Fragment fragment;
+        if (v == findViewById(R.id.test)){
+            fragment = new FragmentTest();
+        }
+        else{
+            fragment = new FragmentMaps();
+        }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.place_holder, fragment);
+        fragmentTransaction.commit();
 
     }
 }
