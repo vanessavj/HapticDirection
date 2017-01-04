@@ -9,10 +9,9 @@
         android:text="Back to Map"
         android:onClick="selectFrag"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
         <Button
             android:id="@+id/left"
@@ -20,7 +19,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="L"
+            android:layout_centerVertical="true"
             android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/right"
+            android:tag="r"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="R"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/leftahead"
+            android:tag="la"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LA"
+            android:layout_above="@id/left"
+            android:layout_marginLeft="60dp" />
 
         <Button
             android:id="@+id/ahead"
@@ -28,21 +47,48 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="A"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@id/leftahead"
             android:onClick="ButtonPressed"/>
+
         <Button
-            android:id="@+id/right"
-            android:tag="r"
+            android:id="@+id/rightahead"
+            android:tag="ra"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="R"
-            android:onClick="ButtonPressed"/>
+            android:text="RA"
+            android:layout_above="@id/right"
+            android:layout_alignRight="@id/right"
+            android:layout_marginRight="60dp" />
+
+        <Button
+            android:id="@+id/rightbehind"
+            android:tag="rb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RB"
+            android:layout_below="@id/right"
+            android:layout_alignRight="@id/right"
+            android:layout_marginRight="60dp" />
+
         <Button
             android:id="@+id/behind"
             android:tag="b"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="B"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/rightbehind"
             android:onClick="ButtonPressed"/>
-    </LinearLayout>
+
+        <Button
+            android:id="@+id/leftbehind"
+            android:tag="lb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LB"
+            android:layout_below="@id/right"
+            android:layout_marginLeft="60dp" />
+    </RelativeLayout>
 
 </LinearLayout>
