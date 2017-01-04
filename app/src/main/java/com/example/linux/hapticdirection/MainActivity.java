@@ -394,6 +394,19 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                     .show();
         }
     }
+
+    public void ButtonPressed(View v){
+        String s = v.getTag().toString();
+        byte[] value;
+        try {
+            value= s.getBytes("UTF-8");
+            mService.writeRXCharacteristic(value);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }
 
 
