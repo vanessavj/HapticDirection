@@ -1,6 +1,9 @@
 package com.example.linux.hapticdirection;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 import android.app.Fragment;
@@ -16,6 +19,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -28,7 +34,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.view.View;
 
 
-public class FragmentMaps extends Fragment {
+public class FragmentMaps extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
+    protected String mLatitudeLabel = "Latitude:";
+    protected String mLongitudeLabel = "Longitude";
+    protected TextView mLatitudeText;
+    protected TextView mLongitudeText;
 
     MapView mMapView;
     private GoogleMap mGoogleMap;
@@ -40,6 +53,13 @@ public class FragmentMaps extends Fragment {
     //TODO: get destLocation by searching
     Location destLocation = new Location("");
     LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -83,9 +103,52 @@ public class FragmentMaps extends Fragment {
         }
 
         });
+        buildGoogleApiClient();
 
+        mLatitudeText = (TextView) rootView.findViewById((R.id.latitude_text));
+        mLongitudeText = (TextView) rootView.findViewById((R.id.longitude_text));
         return rootView;
     }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    public void onConnected(Bundle connectionHint) {
+        // Provides a simple way of getting a device's location and is well suited for
+        // applications that do not require a fine-grained location and that do not need location
+        // updates. Gets the best and most recent location currently available, which may be null
+        // in rare cases when a location is not available.
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if (mLastLocation != null) {
+                mLatitudeText.setText(String.format("%s: %f", mLatitudeLabel, mLastLocation.getLatitude()));
+                mLongitudeText.setText(String.format("%s: %f", mLongitudeLabel, mLastLocation.getLongitude()));
+            } else {
+                Log.i(bla, "Location not detected ");
+            }
+        }
+
+    }
+
 
     @Override
     public void onResume() {
@@ -111,4 +174,19 @@ public class FragmentMaps extends Fragment {
         mMapView.onLowMemory();
     }
 
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(bla, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        // The connection to Google Play services was lost for some reason. We call connect() to
+        // attempt to re-establish the connection.
+        Log.i(bla, "Connection suspended");
+        mGoogleApiClient.connect();
+    }
 }
+
