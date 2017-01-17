@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import android.view.View;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -47,7 +48,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -79,8 +80,15 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     protected String mLatitudeLabel = "Latitude:";
     protected String mLongitudeLabel = "Longitude";
     protected String mLastUpdateTimeLabel = "Last Update";
+    protected String mBearingToDestLabel = "Bearing to Dest";
+    protected String mHeadingLabel = "Heading";
+    protected String mDistanceToDestLabel = "Distance to Dest";
     protected TextView mLatitudeText;
     protected TextView mLongitudeText;
+    protected TextView mBearingToDestText;
+    protected TextView mHeadingText;
+    protected TextView mDistanceToDestText;
+
 
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
@@ -145,10 +153,12 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         mLatitudeText = (TextView) rootView.findViewById(R.id.latitude_text);
         mLongitudeText = (TextView) rootView.findViewById(R.id.longitude_text);
         mLastUpdateTimeTextView = (TextView) rootView.findViewById(R.id.last_update_time_text);
+        mBearingToDestText = (TextView) rootView.findViewById(R.id.bearing_to_dest_text);
+        mDistanceToDestText = (TextView) rootView.findViewById(R.id.distance_to_dest_text);
+        mHeadingText = (TextView) rootView.findViewById(R.id.heading_text);
 
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
-
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
 
@@ -222,12 +232,22 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     }
 
     private void updateUI() {
+
         mLatitudeText.setText(String.format("%s: %f", mLatitudeLabel,
                 mCurrentLocation.getLatitude()));
         mLongitudeText.setText(String.format("%s: %f", mLongitudeLabel,
                 mCurrentLocation.getLongitude()));
         mLastUpdateTimeTextView.setText(String.format("%s: %s", mLastUpdateTimeLabel,
                 mLastUpdateTime));
+        mBearingToDestText.setText(String.format("%s: %s", mBearingToDestLabel,
+               mCurrentLocation.bearingTo(destLocation)));
+        mHeadingText.setText(String.format("%s: %s", mHeadingLabel, mCurrentLocation.getBearing()));
+        mDistanceToDestText.setText(String.format("%s: %s", mDistanceToDestLabel,
+                mCurrentLocation.distanceTo(destLocation)));
+        CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 16);
+        mGoogleMap.moveCamera(camUp);
+
+
     }
 
     private void setButtonsEnabledState() {
@@ -285,7 +305,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, (LocationListener) this);
+                    mGoogleApiClient, mLocationRequest, this);
         }
 
     }
@@ -320,6 +340,8 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         if (mCurrentLocation == null) {
             if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                Calendar c = Calendar.getInstance();
+                mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
                 //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
                 updateUI();
             }
@@ -337,6 +359,8 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
+        Calendar c = Calendar.getInstance();
+        mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
         //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
         Log.i(bla, "Location is updated");
