@@ -34,7 +34,7 @@
 
         <Button
             android:id="@+id/leftahead"
-            android:tag="la"
+            android:tag="al"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LA"
@@ -54,7 +54,7 @@
 
         <Button
             android:id="@+id/rightahead"
-            android:tag="ra"
+            android:tag="ar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="RA"
@@ -65,7 +65,7 @@
 
         <Button
             android:id="@+id/rightbehind"
-            android:tag="rb"
+            android:tag="br"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="RB"
@@ -86,7 +86,7 @@
 
         <Button
             android:id="@+id/leftbehind"
-            android:tag="lb"
+            android:tag="bl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LB"

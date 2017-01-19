@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     }
 
     //UART service connected/disconnected
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
+    public ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
             mService = ((UartService.LocalBinder) rawBinder).getService();
             Log.d(TAG, "onServiceConnected mService= " + mService);
@@ -420,6 +420,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         fragmentTransaction.replace(R.id.place_holder, fragment);
         fragmentTransaction.commit();
 
+    }
+
+    public UartService getmService(){
+        return mService;
     }
 }
 

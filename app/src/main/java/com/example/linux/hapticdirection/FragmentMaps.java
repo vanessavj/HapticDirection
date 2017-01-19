@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import android.view.View;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -77,12 +78,12 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
     protected TextView mLastUpdateTimeTextView;
-    protected String mLatitudeLabel = "Latitude:";
-    protected String mLongitudeLabel = "Longitude";
+    protected String mLatitudeLabel = "Lat";
+    protected String mLongitudeLabel = "Long";
     protected String mLastUpdateTimeLabel = "Last Update";
-    protected String mBearingToDestLabel = "Bearing to Dest";
+    protected String mBearingToDestLabel = "BearToDest";
     protected String mHeadingLabel = "Heading";
-    protected String mDistanceToDestLabel = "Distance to Dest";
+    protected String mDistanceToDestLabel = "DistToDest";
     protected TextView mLatitudeText;
     protected TextView mLongitudeText;
     protected TextView mBearingToDestText;
@@ -122,9 +123,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         destLocation.setLatitude(destLocationPos.latitude);
         destLocation.setLongitude(destLocationPos.longitude);
-
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
-
         mStartUpdatesButton = (Button) rootView.findViewById(R.id.start_updates_button);
         mStartUpdatesButton.setOnClickListener(new View.OnClickListener()
         {
@@ -178,14 +177,13 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
 
         public void onMapReady(GoogleMap map) {
             mGoogleMap = map;
-            if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mGoogleMap.setMyLocationEnabled(true);
                 LocationManager locman = (LocationManager) getActivity().getSystemService(getContext().LOCATION_SERVICE);
                 Location lastKnown = locman.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                 //Log.i(bla, Double.toString(lastKnown.getLongitude())+"  "+Double.toString((lastKnown.getLatitude())));
                 LatLng pos = new LatLng(lastKnown.getLatitude(), lastKnown.getLongitude());
                 mGoogleMap.addMarker(new MarkerOptions().position(destLocationPos).title("Position"));
-                //TODO: Display the values on phone
                 Log.i(bla, Double.toString(lastKnown.bearingTo(destLocation)));
                 Log.i(bla, Double.toString(lastKnown.distanceTo(destLocation)));
                 CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(pos, 16);
@@ -246,6 +244,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
                 mCurrentLocation.distanceTo(destLocation)));
         CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 16);
         mGoogleMap.moveCamera(camUp);
+        
 
 
     }
@@ -344,6 +343,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
                 mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
                 //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
                 updateUI();
+                calculateHeading();
             }
 
         }
@@ -356,6 +356,8 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
 
     }
 
+
+
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
@@ -363,7 +365,33 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
         //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
+        calculateHeading();
         Log.i(bla, "Location is updated");
+
+    }
+
+    private void calculateHeading() {
+        String message ="";
+        double bearingToDest = (mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing()) % 360;
+        if (bearingToDest<=22.5 && bearingToDest>337.5) {
+            message = "a";
+        }else if(bearingToDest>22.5 && bearingToDest<=67.5){
+            message="al";
+        }else if(bearingToDest>67.5 && bearingToDest<=112.5){
+            message ="l";
+        }else if(bearingToDest>112.5 && bearingToDest<=157.5){
+            message ="bl";
+        }else if(bearingToDest>157.5 && bearingToDest<=202.5){
+            message = "b";
+        }else if(bearingToDest>202.5 && bearingToDest<=247.5){
+            message = "br";
+        }else if(bearingToDest>247.5 && bearingToDest<=292.5){
+            message = "r";
+        }else if(bearingToDest>292.5 && bearingToDest<=337.5){
+            message = "ar";
+        }
+        //sendToArduino(message);
+
     }
 
 
@@ -419,5 +447,17 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
     }
+
+    //TODO: Hier haben wir ein Problem ... cool was ... NullpointerObject
+    /*public void sendToArduino(String message){
+        byte[] value;
+        try {
+            value = message.getBytes("UTF-8");
+            ((MainActivity)getActivity()).getmService().writeRXCharacteristic(value);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }*/
+
 }
 
