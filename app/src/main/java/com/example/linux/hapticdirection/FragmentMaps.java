@@ -1,9 +1,7 @@
 package com.example.linux.hapticdirection;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.icu.text.DateFormat;
 import android.support.annotation.NonNull;
 import android.widget.TextView;
 
@@ -12,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -32,17 +29,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import android.view.View;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
-import java.util.Date;
 
 
-public class FragmentMaps extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class FragmentMaps extends Fragment {
 
     protected static final String TAG = "location-updates-sample";
 
@@ -89,6 +82,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     protected TextView mBearingToDestText;
     protected TextView mHeadingText;
     protected TextView mDistanceToDestText;
+    protected String direction ="";
 
 
     /**
@@ -124,7 +118,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         destLocation.setLatitude(destLocationPos.latitude);
         destLocation.setLongitude(destLocationPos.longitude);
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
-        mStartUpdatesButton = (Button) rootView.findViewById(R.id.start_updates_button);
+       /* mStartUpdatesButton = (Button) rootView.findViewById(R.id.start_updates_button);
         mStartUpdatesButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -160,6 +154,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         mLastUpdateTime = "";
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
+        */
 
         mMapView = (MapView) rootView.findViewById(R.id.map);
         //Log.i(bla, "irgendwas");
@@ -195,14 +190,15 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         }
 
         });
+        /*
         buildGoogleApiClient();
 
         mLatitudeText = (TextView) rootView.findViewById((R.id.latitude_text));
-        mLongitudeText = (TextView) rootView.findViewById((R.id.longitude_text));
+        mLongitudeText = (TextView) rootView.findViewById((R.id.longitude_text));*/
         return rootView;
     }
 
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
+    /*private void updateValuesFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
@@ -307,23 +303,23 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
                     mGoogleApiClient, mLocationRequest, this);
         }
 
-    }
+    }*/
 
     @Override
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        //mGoogleApiClient.connect();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mGoogleApiClient.isConnected()) {
+       /* if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
-        }
+        }*/
     }
 
-    public void onConnected(Bundle connectionHint) {
+    /*public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
 
         // If the initial location was never previously requested, we use
@@ -371,37 +367,35 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     }
 
     private void calculateHeading() {
-        String message ="";
         double bearingToDest = (mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing()) % 360;
         if (bearingToDest<=22.5 && bearingToDest>337.5) {
-            message = "a";
+            direction = "a";
         }else if(bearingToDest>22.5 && bearingToDest<=67.5){
-            message="al";
+            direction ="al";
         }else if(bearingToDest>67.5 && bearingToDest<=112.5){
-            message ="l";
+            direction ="l";
         }else if(bearingToDest>112.5 && bearingToDest<=157.5){
-            message ="bl";
+            direction ="bl";
         }else if(bearingToDest>157.5 && bearingToDest<=202.5){
-            message = "b";
+            direction = "b";
         }else if(bearingToDest>202.5 && bearingToDest<=247.5){
-            message = "br";
+            direction = "br";
         }else if(bearingToDest>247.5 && bearingToDest<=292.5){
-            message = "r";
+            direction = "r";
         }else if(bearingToDest>292.5 && bearingToDest<=337.5){
-            message = "ar";
+            direction = "ar";
         }
-        //sendToArduino(message);
+        //sendToArduino(direction);
 
-    }
-
+    }*/
 
     @Override
     public void onResume() {
         super.onResume();
         mMapView.onResume();
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+        /*if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
             startLocationUpdates();
-        }
+        }*/
     }
 
     @Override
@@ -409,9 +403,9 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         super.onPause();
         mMapView.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
-        if (mGoogleApiClient.isConnected()) {
+       /* if (mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
-        }
+        }*/
     }
 
     @Override
@@ -427,7 +421,7 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
     }
 
 
-    @Override
+  /*  @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i(bla, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
 
@@ -446,18 +440,17 @@ public class FragmentMaps extends Fragment implements GoogleApiClient.Connection
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
-    }
+    }*/
 
     //TODO: Hier haben wir ein Problem ... cool was ... NullpointerObject
-    /*public void sendToArduino(String message){
+    /*public void sendToArduino(String direction){
         byte[] value;
         try {
-            value = message.getBytes("UTF-8");
+            value = direction.getBytes("UTF-8");
             ((MainActivity)getActivity()).getmService().writeRXCharacteristic(value);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }*/
-
 }
 
