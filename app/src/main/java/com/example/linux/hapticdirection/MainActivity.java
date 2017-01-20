@@ -12,6 +12,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -126,6 +127,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected String mLongitudeLabel;
     protected String mLastUpdateTimeLabel;
 
+    protected Location destLocation = new Location("");
+    protected LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
+    protected String direction = "No direction set yet";
+
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
@@ -146,6 +151,9 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.place_holder, new FragmentMaps());
         fragmentTransaction.commit();
+
+        destLocation.setLatitude(destLocationPos.latitude);
+        destLocation.setLongitude(destLocationPos.longitude);
 
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
@@ -689,7 +697,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
         //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         updateUI();
-        //calculateHeading();
+        try {
+            calculateHeading();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         Log.i(TAG, "Location is updated");
 
     }
@@ -733,8 +745,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     }
 
 
-    /*private void calculateHeading() {
-        double bearingToDest = (mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing()) % 360;
+    private void calculateHeading() throws UnsupportedEncodingException {
+
+        double bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
+        bearingToDest=mod((int)bearingToDest,360);
         if (bearingToDest<=22.5 && bearingToDest>337.5) {
             direction = "a";
         }else if(bearingToDest>22.5 && bearingToDest<=67.5){
@@ -751,10 +765,19 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
             direction = "r";
         }else if(bearingToDest>292.5 && bearingToDest<=337.5){
             direction = "ar";
+        } else {
+            direction = String.valueOf(bearingToDest);
         }
-        //sendToArduino(direction);
+        byte [] value = direction.getBytes("UTF-8");
+        mService.writeRXCharacteristic(value);
 
-    }*/
+    }
+
+    private int mod(int x, int y)
+    {
+        int result = x % y;
+        return result < 0? result + y : result;
+    }
 
 
 }
