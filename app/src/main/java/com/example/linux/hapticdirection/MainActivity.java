@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
-import com.example.linux.hapticdirection.UartService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -30,7 +29,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -38,8 +36,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.CompoundButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,10 +46,6 @@ import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 //import com.google.android.gms.maps.MapFragment;
@@ -129,8 +124,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected String mLastUpdateTimeLabel;
 
     protected Location destLocation = new Location("");
-    protected LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
+    protected final LatLng route1Pos = new LatLng(50.97871349999999, 11.309648599999946);
+    protected final LatLng route2Pos = new LatLng(50.978032, 11.319835);
     protected String direction = "No direction set yet";
+
 
 
     /**
@@ -144,6 +141,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
      */
     protected String mLastUpdateTime;
 
+    protected Switch mActivePassiveSwitch;
+    protected String selectedMode;
+    protected Switch mRouteSwitch;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,9 +154,6 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.place_holder, new FragmentMaps());
         fragmentTransaction.commit();
-
-        destLocation.setLatitude(destLocationPos.latitude);
-        destLocation.setLongitude(destLocationPos.longitude);
 
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
@@ -258,6 +256,38 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
         buildGoogleApiClient();
+
+        mActivePassiveSwitch = (Switch) findViewById(R.id.active_passive_switch);
+        if(mActivePassiveSwitch.isChecked()){selectedMode="Active";}
+        else{selectedMode="Passive";}
+        mActivePassiveSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked){selectedMode="Active";}
+                else {selectedMode="Passive";}
+            }
+        });
+
+        mRouteSwitch = (Switch) findViewById(R.id.route_switch);
+        if(mRouteSwitch.isChecked()){
+            destLocation.setLatitude(route2Pos.latitude);
+            destLocation.setLongitude(route2Pos.longitude);
+        }else{
+            destLocation.setLatitude(route1Pos.latitude);
+            destLocation.setLongitude(route1Pos.longitude);
+        }
+        mRouteSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked){
+                    destLocation.setLatitude(route2Pos.latitude);
+                    destLocation.setLongitude(route2Pos.longitude);
+                }else{
+                    destLocation.setLatitude(route1Pos.latitude);
+                    destLocation.setLongitude(route1Pos.longitude);
+                }
+            }
+        });
 
 
     }
@@ -775,7 +805,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         } else {
             direction = String.valueOf(bearingToDest);
         }
-        byte [] value = direction.getBytes("UTF-8");
+        String modeDirection = selectedMode+" "+direction;
+        byte [] value = modeDirection.getBytes("UTF-8");
         mService.writeRXCharacteristic(value);
 
     }
