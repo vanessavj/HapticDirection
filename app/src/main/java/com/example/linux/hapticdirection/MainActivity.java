@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
     protected String direction = "No direction set yet";
 
+
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
@@ -190,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         //Disconnect button pressed
                         if (mDevice != null) {
                             mService.disconnect();
+                            mRequestingLocationUpdates=false;
+                            stopLocationUpdates();
 
                         }
                     }
@@ -247,6 +250,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
+        mStartUpdatesButton.setEnabled(false);
+        mStopUpdatesButton.setEnabled(false);
 
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
@@ -290,11 +295,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+            /*if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingLocationUpdates = savedInstanceState.getBoolean(
                         REQUESTING_LOCATION_UPDATES_KEY);
                 setButtonsEnabledState();
-            }
+            }*/
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
             // correct latitude and longitude.
@@ -373,6 +378,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         btnConnectDisconnect.setText("Disconnect");
                         edtMessage.setEnabled(true);
                         btnSend.setEnabled(true);
+                        setButtonsEnabledState();
+                        //TODO: hier enable button aufrufen
                         ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName() + " - ready");
                         //listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
                         //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
@@ -390,6 +397,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         btnConnectDisconnect.setText("Connect");
                         edtMessage.setEnabled(false);
                         btnSend.setEnabled(false);
+                        mStartUpdatesButton.setEnabled(false);
+                        mStopUpdatesButton.setEnabled(false);
                         ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
                         //listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
                         mState = UART_PROFILE_DISCONNECTED;
@@ -608,10 +617,6 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         fragmentTransaction.replace(R.id.place_holder, fragment);
         fragmentTransaction.commit();
 
-    }
-
-    public UartService getmService() {
-        return mService;
     }
 
     @Override
