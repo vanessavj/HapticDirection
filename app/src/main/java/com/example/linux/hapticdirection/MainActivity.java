@@ -75,8 +75,9 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     private BluetoothAdapter mBtAdapter = null;
     // private ListView messageListView;
     //private ArrayAdapter<String> listAdapter;
-    private Button btnConnectDisconnect, btnSend;
-    private EditText edtMessage;
+    private Button btnConnectDisconnect;
+    //private Button btnSend;
+   // private EditText edtMessage;
 
     /**********************************************************
      * Stuff for Location Updates
@@ -167,8 +168,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         //messageListView.setAdapter(listAdapter);
         //messageListView.setDivider(null);
         btnConnectDisconnect = (Button) findViewById(R.id.btn_select);
-        btnSend = (Button) findViewById(R.id.sendButton);
-        edtMessage = (EditText) findViewById(R.id.sendText);
+       // btnSend = (Button) findViewById(R.id.sendButton);
+        //edtMessage = (EditText) findViewById(R.id.sendText);
         service_init();
 
 
@@ -207,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
          ********************************************************************************************/
 
         // Handle Send button
-        btnSend.setOnClickListener(new View.OnClickListener() {
+       /* btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditText editText = (EditText) findViewById(R.id.sendText);
@@ -229,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
             }
         });
+        */
 
         /*******************************************************
          * Set up for location Updates
@@ -376,8 +378,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.d(TAG, "UART_CONNECT_MSG");
                         btnConnectDisconnect.setText("Disconnect");
-                        edtMessage.setEnabled(true);
-                        btnSend.setEnabled(true);
+                        //edtMessage.setEnabled(true);
+                        //btnSend.setEnabled(true);
                         setButtonsEnabledState();
                         //TODO: hier enable button aufrufen
                         ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName() + " - ready");
@@ -395,8 +397,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.d(TAG, "UART_DISCONNECT_MSG");
                         btnConnectDisconnect.setText("Connect");
-                        edtMessage.setEnabled(false);
-                        btnSend.setEnabled(false);
+                        //edtMessage.setEnabled(false);
+                       // btnSend.setEnabled(false);
                         mStartUpdatesButton.setEnabled(false);
                         mStopUpdatesButton.setEnabled(false);
                         ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
