@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -455,6 +455,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                         try {
                             String text = new String(txValue, "UTF-8");
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
+                            String lastLocation = String.valueOf(mCurrentLocation.getLatitude()) + "," + String.valueOf(mCurrentLocation.getLongitude());
+                            Log.i("VibrationInformation", currentDateTimeString+" "+ lastLocation +" " + text);
                             //listAdapter.add("["+currentDateTimeString+"] RX: "+text);
                             //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
@@ -627,6 +629,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
     public void ButtonPressed(View v) {
         String s = v.getTag().toString();
+        s = "Test"+" "+s;
         byte[] value;
         try {
             value = s.getBytes("UTF-8");
@@ -786,7 +789,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
         double bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
         bearingToDest=mod((int)bearingToDest,360);
-        if (bearingToDest<=22.5 && bearingToDest>337.5) {
+        if (bearingToDest<=22.5 || bearingToDest>337.5) {
             direction = "a";
         }else if(bearingToDest>22.5 && bearingToDest<=67.5){
             direction ="al";
