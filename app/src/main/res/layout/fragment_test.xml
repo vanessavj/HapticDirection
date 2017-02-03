@@ -97,18 +97,17 @@
             android:onClick="ButtonPressed"/>
     </RelativeLayout> -->
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/left"
-            android:tag="l"
+            android:id="@+id/ahead"
+            android:tag="a"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="L"
-            android:layout_weight="1"
+            android:text="A"
+            android:layout_centerHorizontal="true"
             android:onClick="ButtonPressed"/>
 
         <Button
@@ -117,16 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AL"
-            android:layout_weight="1"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/ahead"
-            android:tag="a"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="A"
-            android:layout_weight="1"
+            android:layout_toLeftOf="@id/ahead"
             android:onClick="ButtonPressed"/>
 
         <Button
@@ -135,40 +125,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="AR"
-            android:layout_weight="1"
-            android:onClick="ButtonPressed"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/behindleft"
-            android:tag="bl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BL"
-            android:layout_weight="1"
+            android:layout_toRightOf="@id/ahead"
             android:onClick="ButtonPressed"/>
 
         <Button
-            android:id="@+id/behind"
-            android:tag="b"
+            android:id="@+id/left"
+            android:tag="l"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="B"
-            android:layout_weight="1"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/behindright"
-            android:tag="br"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BR"
-            android:layout_weight="1"
+            android:text="L"
+            android:layout_below="@id/ahead"
+            android:layout_toLeftOf="@id/ahead"
             android:onClick="ButtonPressed"/>
 
         <Button
@@ -177,10 +144,41 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="R"
-            android:layout_weight="1"
+            android:layout_below="@id/ahead"
+            android:layout_toRightOf="@id/ahead"
             android:onClick="ButtonPressed"/>
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/behindleft"
+            android:tag="bl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BL"
+           android:layout_below="@id/left"
+            android:layout_toLeftOf="@id/ahead"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/behind"
+            android:tag="b"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:layout_toRightOf="@id/behindleft"
+            android:layout_below="@id/left"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/behindright"
+            android:tag="br"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BR"
+            android:layout_below="@id/right"
+            android:layout_toRightOf="@id/ahead"
+            android:onClick="ButtonPressed"/>
+
+    </RelativeLayout>
 
     <View
         android:layout_width="fill_parent"
