@@ -44,8 +44,15 @@ import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
+
+import static com.google.android.gms.analytics.internal.zzy.s;
+import static java.util.Arrays.asList;
 
 
 //import com.google.android.gms.maps.MapFragment;
@@ -145,6 +152,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected String selectedMode;
     protected Switch mRouteSwitch;
 
+
+    protected List<String> directions = asList("l","al","a","ar","r","br","b","bl",
+            "l","al","a","ar","r","br","b","bl",
+            "l","al","a","ar","r","br","b","bl");
+    protected int indexDirections;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -818,6 +830,46 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     {
         int result = x % y;
         return result < 0? result + y : result;
+    }
+
+    public void shuffleDirections(View v) {
+        long seed = System.nanoTime();
+        Collections.shuffle(directions,new Random(seed));
+        indexDirections = 0;
+        v.setEnabled(false);
+        Button startNextButton = (Button) findViewById(R.id.start_next_button);
+        startNextButton.setEnabled(true);
+        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
+        currentDirection.setText("");
+        TextView progressTest = (TextView) findViewById(R.id.progress_test);
+        progressTest.setText("");
+    }
+
+    public void startNext (View v){
+        Button b = (Button) v;
+        if(b.getText().equals("Start")){
+            b.setText("Next");
+        }
+        String s = "Test "+ directions.get(indexDirections);
+        byte[] value;
+        try {
+            value = s.getBytes("UTF-8");
+            mService.writeRXCharacteristic(value);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
+        currentDirection.setText(directions.get(indexDirections));
+        TextView progressTest = (TextView) findViewById(R.id.progress_test);
+        progressTest.setText(indexDirections+1 +"/"+directions.size());
+        indexDirections +=1;
+        if(indexDirections >= directions.size()){
+            b.setEnabled(false);
+            b.setText("Start");
+            Button shuffleButton = (Button) findViewById(R.id.shuffle_button);
+            shuffleButton.setEnabled(true);
+        }
+        
     }
 
 

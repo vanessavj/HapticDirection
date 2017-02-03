@@ -3,12 +3,14 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Back to Map"
         android:onClick="selectFrag"/>
 
+    <!--Diamond Layout for Buttons
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -93,6 +95,141 @@
             android:layout_below="@id/right"
             android:layout_marginLeft="60dp"
             android:onClick="ButtonPressed"/>
-    </RelativeLayout>
+    </RelativeLayout> -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/left"
+            android:tag="l"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="L"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/aheadleft"
+            android:tag="al"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AL"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/ahead"
+            android:tag="a"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/aheadright"
+            android:tag="ar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AR"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/behindleft"
+            android:tag="bl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BL"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/behind"
+            android:tag="b"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/behindright"
+            android:tag="br"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BR"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+        <Button
+            android:id="@+id/right"
+            android:tag="r"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="R"
+            android:layout_weight="1"
+            android:onClick="ButtonPressed"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"
+        android:layout_margin="10dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/shuffle_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shuffle"
+            android:onClick="shuffleDirections"/>
+
+        <Button
+            android:id="@+id/start_next_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:onClick="startNext"
+            android:enabled="false"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Current:"/>
+
+        <TextView
+            android:id="@+id/current_direction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:textAllCaps="true"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/progress_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
+
+    </LinearLayout>
+
+
 
 </LinearLayout>
