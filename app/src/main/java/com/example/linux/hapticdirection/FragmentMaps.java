@@ -29,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -104,7 +105,6 @@ public class FragmentMaps extends Fragment {
 
     //TODO: get destLocation by searching
     Location destLocation = new Location("");
-    LatLng destLocationPos= new LatLng(50.97871349999999, 11.309648599999946);
 
     @Override
     public void onAttach(Context context) {
@@ -115,8 +115,6 @@ public class FragmentMaps extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        destLocation.setLatitude(destLocationPos.latitude);
-        destLocation.setLongitude(destLocationPos.longitude);
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
        /* mStartUpdatesButton = (Button) rootView.findViewById(R.id.start_updates_button);
         mStartUpdatesButton.setOnClickListener(new View.OnClickListener()
@@ -178,7 +176,10 @@ public class FragmentMaps extends Fragment {
                 Location lastKnown = locman.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                 //Log.i(bla, Double.toString(lastKnown.getLongitude())+"  "+Double.toString((lastKnown.getLatitude())));
                 LatLng pos = new LatLng(lastKnown.getLatitude(), lastKnown.getLongitude());
-                mGoogleMap.addMarker(new MarkerOptions().position(destLocationPos).title("Position"));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.976429, 11.316403)).title("Start R1").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.980347, 11.313355)).title("Start R2").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.978915, 11.309729)).title("Dest R1").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.977828, 11.319856)).title("Dest R2").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
                 Log.i(bla, Double.toString(lastKnown.bearingTo(destLocation)));
                 Log.i(bla, Double.toString(lastKnown.distanceTo(destLocation)));
                 CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(pos, 16);

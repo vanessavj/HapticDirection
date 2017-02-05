@@ -124,16 +124,19 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected TextView mLastUpdateTimeTextView;
     protected TextView mLatitudeTextView;
     protected TextView mLongitudeTextView;
+    protected TextView mCurrentHeadingTextView;
 
     // Labels.
     protected String mLatitudeLabel;
     protected String mLongitudeLabel;
     protected String mLastUpdateTimeLabel;
+    protected String mCurrentHeadingLabel;
 
     protected Location destLocation = new Location("");
-    protected final LatLng route1Pos = new LatLng(50.97871349999999, 11.309648599999946);
+    protected final LatLng route1Pos = new LatLng(50.978915, 11.309729);
     protected final LatLng route2Pos = new LatLng(50.978032, 11.319835);
     protected String direction = "No direction set yet";
+    protected double bearingToDest;
 
 
 
@@ -251,11 +254,13 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
         mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
+        mCurrentHeadingTextView = (TextView) findViewById(R.id.current_heading);
 
         // Set labels.
         mLatitudeLabel = "Latitude";
         mLongitudeLabel = "Longitude";
         mLastUpdateTimeLabel = "LastUpdate";
+        mCurrentHeadingLabel = "CurrHeading";
 
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
@@ -368,6 +373,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 mCurrentLocation.getLongitude()));
         mLastUpdateTimeTextView.setText(String.format("%s: %s", mLastUpdateTimeLabel,
                 mLastUpdateTime));
+        mCurrentHeadingTextView.setText(String.format("%s: %f", mCurrentHeadingLabel,
+                bearingToDest));
+
+
+
     }
 
     private void setButtonsEnabledState() {
@@ -799,24 +809,24 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
     private void calculateHeading() throws UnsupportedEncodingException {
 
-        double bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
+        bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
         bearingToDest=mod((int)bearingToDest,360);
         if (bearingToDest<=22.5 || bearingToDest>337.5) {
             direction = "a";
         }else if(bearingToDest>22.5 && bearingToDest<=67.5){
-            direction ="al";
+            direction ="ar";
         }else if(bearingToDest>67.5 && bearingToDest<=112.5){
-            direction ="l";
+            direction ="r";
         }else if(bearingToDest>112.5 && bearingToDest<=157.5){
-            direction ="bl";
+            direction ="br";
         }else if(bearingToDest>157.5 && bearingToDest<=202.5){
             direction = "b";
         }else if(bearingToDest>202.5 && bearingToDest<=247.5){
-            direction = "br";
+            direction = "bl";
         }else if(bearingToDest>247.5 && bearingToDest<=292.5){
-            direction = "r";
+            direction = "l";
         }else if(bearingToDest>292.5 && bearingToDest<=337.5){
-            direction = "ar";
+            direction = "al";
         } else {
             direction = String.valueOf(bearingToDest);
         }
