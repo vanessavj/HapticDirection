@@ -25,6 +25,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -42,6 +43,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -134,7 +139,9 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
     protected Location destLocation = new Location("");
     protected final LatLng route1Pos = new LatLng(50.978915, 11.309729);
+    //protected final LatLng route1Pos = new LatLng(50.990320, 11.333630);
     protected final LatLng route2Pos = new LatLng(50.978032, 11.319835);
+    //protected final LatLng route2Pos = new LatLng(50.986775, 11.329777);
     protected String direction = "No direction set yet";
     protected double bearingToDest;
 
@@ -479,6 +486,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                             String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                             String lastLocation = String.valueOf(mCurrentLocation.getLatitude()) + "," + String.valueOf(mCurrentLocation.getLongitude());
                             Log.i("VibrationInformation", currentDateTimeString+" "+ lastLocation +" " + text);
+                            appendLog(currentDateTimeString+" "+ lastLocation +" " + text);
                             //listAdapter.add("["+currentDateTimeString+"] RX: "+text);
                             //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
@@ -830,6 +838,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         } else {
             direction = String.valueOf(bearingToDest);
         }
+        //String modeDirection = selectedMode+" "+mCurrentLocation.distanceTo(destLocation)+" "+direction;
         String modeDirection = selectedMode+" "+direction;
         byte [] value = modeDirection.getBytes("UTF-8");
         mService.writeRXCharacteristic(value);
@@ -880,6 +889,43 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
             shuffleButton.setEnabled(true);
         }
         
+    }
+
+
+
+    public void appendLog(String text)
+    {
+        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            String fileName = Environment.getExternalStorageDirectory().getAbsolutePath()+"/log.txt,";
+            File logFile = new File(fileName);
+            if (!logFile.exists())
+            {
+                try
+                {
+                    logFile.createNewFile();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            try
+            {
+                //BufferedWriter for performance, true to set append to file flag
+                BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
+                buf.append(text);
+                Log.i("VibrationInformation", text + " appended to" + fileName);
+                buf.newLine();
+                buf.close();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
     }
 
 

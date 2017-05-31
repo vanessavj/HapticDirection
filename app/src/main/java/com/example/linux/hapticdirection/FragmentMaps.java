@@ -180,6 +180,8 @@ public class FragmentMaps extends Fragment {
                 mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.980347, 11.313355)).title("Start R2").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
                 mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.978915, 11.309729)).title("Dest R1").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                 mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.977828, 11.319856)).title("Dest R2").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.990320, 11.333630)).title("Dest R1").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(50.986775, 11.329777)).title("Dest R2").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                 Log.i(bla, Double.toString(lastKnown.bearingTo(destLocation)));
                 Log.i(bla, Double.toString(lastKnown.distanceTo(destLocation)));
                 CameraUpdate camUp = CameraUpdateFactory.newLatLngZoom(pos, 16);
