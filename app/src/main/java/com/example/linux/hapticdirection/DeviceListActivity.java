@@ -30,10 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by linux on 21.11.16.
- */
-
 
 public class DeviceListActivity extends Activity {
 
@@ -317,8 +313,5 @@ public class DeviceListActivity extends Activity {
             }
             return vg;
         }
-    }
-    private void showMessage(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

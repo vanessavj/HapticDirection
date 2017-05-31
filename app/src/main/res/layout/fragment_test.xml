@@ -3,99 +3,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Back to Map"
         android:onClick="selectFrag"/>
-
-    <!--Diamond Layout for Buttons
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <Button
-            android:id="@+id/left"
-            android:tag="l"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="L"
-            android:layout_centerVertical="true"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/right"
-            android:tag="r"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="R"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/leftahead"
-            android:tag="al"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="LA"
-            android:layout_above="@id/left"
-            android:layout_marginLeft="60dp"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/ahead"
-            android:tag="a"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="A"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@id/leftahead"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/rightahead"
-            android:tag="ar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RA"
-            android:layout_above="@id/right"
-            android:layout_alignRight="@id/right"
-            android:layout_marginRight="60dp"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/rightbehind"
-            android:tag="br"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RB"
-            android:layout_below="@id/right"
-            android:layout_alignRight="@id/right"
-            android:layout_marginRight="60dp"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/behind"
-            android:tag="b"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="B"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@id/rightbehind"
-            android:onClick="ButtonPressed"/>
-
-        <Button
-            android:id="@+id/leftbehind"
-            android:tag="bl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="LB"
-            android:layout_below="@id/right"
-            android:layout_marginLeft="60dp"
-            android:onClick="ButtonPressed"/>
-    </RelativeLayout> -->
 
     <RelativeLayout
         android:layout_width="match_parent"

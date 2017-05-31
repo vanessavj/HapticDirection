@@ -49,79 +49,73 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import static com.google.android.gms.analytics.internal.zzy.s;
 import static java.util.Arrays.asList;
 
 
-//import com.google.android.gms.maps.MapFragment;
-
-public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    /**************************************************
-     * BLE BLUETOOTH STUFF
-     **************************************************/
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    /***************************************************
+     * Variables for Bluetooth Service
+     ***************************************************/
     private static final int REQUEST_SELECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
-    //private static final int UART_PROFILE_READY = 10;
     public static final String TAG = "nRFUART";
     private static final int UART_PROFILE_CONNECTED = 20;
     private static final int UART_PROFILE_DISCONNECTED = 21;
-    //private static final int STATE_OFF = 10;
-
-    //TextView mRemoteRssiVal;
-    //RadioGroup mRg;
     private int mState = UART_PROFILE_DISCONNECTED;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
-    private BluetoothAdapter mBtAdapter = null;
-    // private ListView messageListView;
-    //private ArrayAdapter<String> listAdapter;
+    private BluetoothAdapter mBtAdapter = null;;
     private Button btnConnectDisconnect;
-    //private Button btnSend;
-   // private EditText edtMessage;
 
     /**********************************************************
-     * Stuff for Location Updates
+     * Variables for Location Updates
      *********************************************************/
-    // protected static final String TAG = "location-updates-sample";
 
-    /**
-     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
+    //Desired Interval for Location Updates
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
 
-    /**
-     * The fastest rate for active location updates. Exact. Updates will never be more frequent
-     * than this value.
-     */
+    // The fastest interval for Location Updates
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
-    // Keys for storing activity state in the Bundle.
+    // Keys for storing activity state in the Bundle
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
-    /**
-     * Provides the entry point to Google Play services.
-     */
     protected GoogleApiClient mGoogleApiClient;
 
-    /**
-     * Stores parameters for requests to the FusedLocationProviderApi.
-     */
+    //stores parameters for requests to the FusedLocationProviderApi
     protected LocationRequest mLocationRequest;
 
-    /**
-     * Represents a geographical location.
-     */
+    //tracks whether location updates are currently requested. Changes when Start or Stop Updates is pressed
+    protected Boolean mRequestingLocationUpdates;
+
+    //last time the location was updated
+    protected String mLastUpdateTime;
+
+    //store current and destination location of both routes
     protected Location mCurrentLocation;
+    protected Location destLocation = new Location("");
+    protected final LatLng route1Pos = new LatLng(50.978915, 11.309729);
+    protected final LatLng route2Pos = new LatLng(50.978032, 11.319835);
+    protected String direction = "No direction set yet";
+    protected double bearingToDest;
+
+    // stores whether push- or pull based mode is selected
+    protected String selectedMode;
+
+    /* List of all 8 directions, each repeated 3 times
+    needed for testing by playing 24 pattern in randomized order*/
+    protected List<String> directions = asList("l","al","a","ar","r","br","b","bl",
+            "l","al","a","ar","r","br","b","bl",
+            "l","al","a","ar","r","br","b","bl");
+    protected int indexDirections;
 
     // UI Widgets.
     protected Button mStartUpdatesButton;
@@ -130,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected TextView mLatitudeTextView;
     protected TextView mLongitudeTextView;
     protected TextView mCurrentHeadingTextView;
+    protected Switch mActivePassiveSwitch;
+    protected Switch mRouteSwitch;
 
     // Labels.
     protected String mLatitudeLabel;
@@ -137,61 +133,27 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     protected String mLastUpdateTimeLabel;
     protected String mCurrentHeadingLabel;
 
-    protected Location destLocation = new Location("");
-    protected final LatLng route1Pos = new LatLng(50.978915, 11.309729);
-    //protected final LatLng route1Pos = new LatLng(50.990320, 11.333630);
-    protected final LatLng route2Pos = new LatLng(50.978032, 11.319835);
-    //protected final LatLng route2Pos = new LatLng(50.986775, 11.329777);
-    protected String direction = "No direction set yet";
-    protected double bearingToDest;
-
-
-
-    /**
-     * Tracks the status of the location updates request. Value changes when the user presses the
-     * Start Updates and Stop Updates buttons.
-     */
-    protected Boolean mRequestingLocationUpdates;
-
-    /**
-     * Time when the location was updated represented as a String.
-     */
-    protected String mLastUpdateTime;
-
-    protected Switch mActivePassiveSwitch;
-    protected String selectedMode;
-    protected Switch mRouteSwitch;
-
-
-    protected List<String> directions = asList("l","al","a","ar","r","br","b","bl",
-            "l","al","a","ar","r","br","b","bl",
-            "l","al","a","ar","r","br","b","bl");
-    protected int indexDirections;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // display map when app is started
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.place_holder, new FragmentMaps());
         fragmentTransaction.commit();
 
+        //initialize Bluetooth Service
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        // messageListView = (ListView) findViewById(R.id.listMessage);
-        //listAdapter = new ArrayAdapter<String>(this, R.layout.message_detail);
-        //messageListView.setAdapter(listAdapter);
-        //messageListView.setDivider(null);
-        btnConnectDisconnect = (Button) findViewById(R.id.btn_select);
-       // btnSend = (Button) findViewById(R.id.sendButton);
-        //edtMessage = (EditText) findViewById(R.id.sendText);
-        service_init();
 
+        btnConnectDisconnect = (Button) findViewById(R.id.btn_select);
+        service_init();
 
         // Handle Disconnect & Connect button
         btnConnectDisconnect.setOnClickListener(new View.OnClickListener() {
@@ -205,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                     if (btnConnectDisconnect.getText().equals("Connect")) {
 
                         //Connect button pressed, open DeviceListActivity class, with popup windows that scan for devices
-
                         Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
                         startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
                     } else {
@@ -214,48 +175,17 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                             mService.disconnect();
                             mRequestingLocationUpdates=false;
                             stopLocationUpdates();
-
                         }
                     }
                 }
             }
         });
 
-        /*************VERSENDEN**********************************************************************
-         * der geschriebene Text wird aus dem Edit Text herausgeholt
-         * und dann mit mService.writeCharacteristic an das Gerät geschickt
-         * die geschriebene Nachricht wird der Liste mit der aktuellen Zeit hinzugefügt
-         ********************************************************************************************/
-
-        // Handle Send button
-       /* btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EditText editText = (EditText) findViewById(R.id.sendText);
-                String message = editText.getText().toString();
-                byte[] value;
-                try {
-                    //send data to service
-                    value = message.getBytes("UTF-8");
-                    mService.writeRXCharacteristic(value);
-                    //Update the log with time stamp
-                    //String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
-                    //listAdapter.add("["+currentDateTimeString+"] TX: "+ message);
-                    //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-                    edtMessage.setText("");
-                } catch (UnsupportedEncodingException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        */
-
         /*******************************************************
-         * Set up for location Updates
+         * Set up location Updates
          *******************************************************/
-// Locate the UI widgets.
+
+        // Locate the UI widgets.
         mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
         mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
         mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
@@ -277,21 +207,31 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         mStartUpdatesButton.setEnabled(false);
         mStopUpdatesButton.setEnabled(false);
 
-        // Kick off the process of building a GoogleApiClient and requesting the LocationServices
-        // API.
+        // Kick off the process of building a GoogleApiClient and requesting the LocationServices API
         buildGoogleApiClient();
 
+        // get the selected Mode and attach a change listener to the switch
         mActivePassiveSwitch = (Switch) findViewById(R.id.active_passive_switch);
-        if(mActivePassiveSwitch.isChecked()){selectedMode="Active";}
-        else{selectedMode="Passive";}
+        if(mActivePassiveSwitch.isChecked()){
+            selectedMode="Active";
+        }
+        else{
+            selectedMode="Passive";
+        }
         mActivePassiveSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){selectedMode="Active";}
-                else {selectedMode="Passive";}
+                if(isChecked){
+                    selectedMode="Active";
+                }
+                else {
+                    selectedMode="Passive";
+                }
             }
         });
 
+        // get current route and attach change listener
+        // set destination location according to current route
         mRouteSwitch = (Switch) findViewById(R.id.route_switch);
         if(mRouteSwitch.isChecked()){
             destLocation.setLatitude(route2Pos.latitude);
@@ -312,90 +252,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 }
             }
         });
-
-
     }
 
-    /**
-     * Builds a GoogleApiClient. Uses the {@code #addApi} method to request the
-     * LocationServices API.
-     */
-    protected synchronized void buildGoogleApiClient() {
-        Log.i(TAG, "Building GoogleApiClient");
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        createLocationRequest();
-    }
-
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-
-        // Sets the desired interval for active location updates. This interval is
-        // inexact. You may not receive updates at all if no location sources are available, or
-        // you may receive them slower than requested. You may also receive updates faster than
-        // requested if other applications are requesting location at a faster interval.
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-
-        // Sets the fastest rate for active location updates. This interval is exact, and your
-        // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
-        Log.i(TAG, "Updating values from bundle");
-        if (savedInstanceState != null) {
-            // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
-            // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            /*if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-                mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                        REQUESTING_LOCATION_UPDATES_KEY);
-                setButtonsEnabledState();
-            }*/
-
-            // Update the value of mCurrentLocation from the Bundle and update the UI to show the
-            // correct latitude and longitude.
-            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
-                // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
-                // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
-            }
-
-            // Update the value of mLastUpdateTime from the Bundle and update the UI.
-            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
-            }
-            updateUI();
-        }
-    }
-
-    private void updateUI() {
-        mLatitudeTextView.setText(String.format("%s: %f", mLatitudeLabel,
-                mCurrentLocation.getLatitude()));
-        mLongitudeTextView.setText(String.format("%s: %f", mLongitudeLabel,
-                mCurrentLocation.getLongitude()));
-        mLastUpdateTimeTextView.setText(String.format("%s: %s", mLastUpdateTimeLabel,
-                mLastUpdateTime));
-        mCurrentHeadingTextView.setText(String.format("%s: %f", mCurrentHeadingLabel,
-                bearingToDest));
-
-
-
-    }
-
-    private void setButtonsEnabledState() {
-        if (mRequestingLocationUpdates) {
-            mStartUpdatesButton.setEnabled(false);
-            mStopUpdatesButton.setEnabled(true);
-        } else {
-            mStartUpdatesButton.setEnabled(true);
-            mStopUpdatesButton.setEnabled(false);
-        }
-    }
+    /***********************************************************************************
+     * Methods related to Bluetooth Service
+     ***********************************************************************************/
 
     //UART service connected/disconnected
     public ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -406,18 +267,15 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-
         }
 
         public void onServiceDisconnected(ComponentName classname) {
-            ////     mService.disconnect(mDevice);
             mService = null;
         }
     };
 
     private Handler mHandler = new Handler() {
         @Override
-
         //Handler events that received from UART service
         public void handleMessage(Message msg) {
 
@@ -429,53 +287,36 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            final Intent mIntent = intent;
-            //*********************//
             if (action.equals(UartService.ACTION_GATT_CONNECTED)) {
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.d(TAG, "UART_CONNECT_MSG");
                         btnConnectDisconnect.setText("Disconnect");
-                        //edtMessage.setEnabled(true);
-                        //btnSend.setEnabled(true);
                         setButtonsEnabledState();
-                        //TODO: hier enable button aufrufen
                         ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName() + " - ready");
-                        //listAdapter.add("["+currentDateTimeString+"] Connected to: "+ mDevice.getName());
-                        //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
                         mState = UART_PROFILE_CONNECTED;
                     }
                 });
             }
 
-            //*********************//
             if (action.equals(UartService.ACTION_GATT_DISCONNECTED)) {
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
                         Log.d(TAG, "UART_DISCONNECT_MSG");
                         btnConnectDisconnect.setText("Connect");
-                        //edtMessage.setEnabled(false);
-                       // btnSend.setEnabled(false);
                         mStartUpdatesButton.setEnabled(false);
                         mStopUpdatesButton.setEnabled(false);
                         ((TextView) findViewById(R.id.deviceName)).setText("Not Connected");
-                        //listAdapter.add("["+currentDateTimeString+"] Disconnected to: "+ mDevice.getName());
                         mState = UART_PROFILE_DISCONNECTED;
                         mService.close();
-                        //setUiState();
-
                     }
                 });
             }
 
-
-            //*********************//
             if (action.equals(UartService.ACTION_GATT_SERVICES_DISCOVERED)) {
                 mService.enableTXNotification();
             }
-            //*********************//
+
             if (action.equals(UartService.ACTION_DATA_AVAILABLE)) {
 
                 final byte[] txValue = intent.getByteArrayExtra(UartService.EXTRA_DATA);
@@ -487,29 +328,22 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                             String lastLocation = String.valueOf(mCurrentLocation.getLatitude()) + "," + String.valueOf(mCurrentLocation.getLongitude());
                             Log.i("VibrationInformation", currentDateTimeString+" "+ lastLocation +" " + text);
                             appendLog(currentDateTimeString+" "+ lastLocation +" " + text);
-                            //listAdapter.add("["+currentDateTimeString+"] RX: "+text);
-                            //messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
-
                         } catch (Exception e) {
                             Log.e(TAG, e.toString());
                         }
                     }
                 });
             }
-            //*********************//
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART)) {
                 showMessage("Device doesn't support UART. Disconnecting");
                 mService.disconnect();
             }
-
-
         }
     };
 
     private void service_init() {
         Intent bindIntent = new Intent(this, UartService.class);
         bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-
         LocalBroadcastManager.getInstance(this).registerReceiver(UARTStatusChangeReceiver, makeGattUpdateIntentFilter());
     }
 
@@ -522,6 +356,308 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         intentFilter.addAction(UartService.DEVICE_DOES_NOT_SUPPORT_UART);
         return intentFilter;
     }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+
+            case REQUEST_SELECT_DEVICE:
+                //When the DeviceListActivity return, with the selected device address
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+
+                    Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
+                    ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName() + " - connecting");
+                    mService.connect(deviceAddress);
+
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    Toast.makeText(this, "Bluetooth has turned on ", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    // User did not enable Bluetooth or an error occurred
+                    Log.d(TAG, "BT not enabled");
+                    Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                break;
+            default:
+                Log.e(TAG, "wrong request code");
+                break;
+        }
+    }
+    /**********************************************************************************
+     * Methods related to Google Maps API and Location Services API
+     **********************************************************************************/
+
+    //builds GoogleApiClient and requests LocationServices API
+    protected synchronized void buildGoogleApiClient() {
+        Log.i(TAG, "Building GoogleApiClient");
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        createLocationRequest();
+    }
+
+    //sets parameters for Location Request
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.i(TAG, "Connected to GoogleApiClient");
+
+        // if location was never requested before, use getLastLocation() to get it
+        if (mCurrentLocation == null) {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+            updateUI();
+        }
+
+        // check if User pressed button before the client was ready and start locationUpdates if so
+        if (mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        // connection was lost, try to reconnect.
+        Log.i(TAG, "Connection suspended");
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
+    }
+
+    //gets saved currentlocation and lastupdatetime from bundle and updates UI
+    private void updateValuesFromBundle(Bundle savedInstanceState) {
+        Log.i(TAG, "Updating values from bundle");
+        if (savedInstanceState != null) {
+            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+            }
+            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
+                mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
+            }
+            updateUI();
+        }
+    }
+
+    //saves current location and last update time if App is paused
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
+        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    // starts location updates when start button is pressed and not already running
+    public void startUpdatesButtonHandler(View view) {
+        if (!mRequestingLocationUpdates) {
+            mRequestingLocationUpdates = true;
+            setButtonsEnabledState();
+            startLocationUpdates();
+        }
+    }
+
+    //location requests started
+    protected void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+    }
+
+    // stop location updates when stop button is pressed and running
+    public void stopUpdatesButtonHandler(View view) {
+        if (mRequestingLocationUpdates) {
+            mRequestingLocationUpdates = false;
+            setButtonsEnabledState();
+            stopLocationUpdates();
+        }
+    }
+
+    //location requests stopped
+    protected void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    // if locationUpdates are currently running, set button to stop
+    //otherwise set button to start
+    private void setButtonsEnabledState() {
+        if (mRequestingLocationUpdates) {
+            mStartUpdatesButton.setEnabled(false);
+            mStopUpdatesButton.setEnabled(true);
+        } else {
+            mStartUpdatesButton.setEnabled(true);
+            mStopUpdatesButton.setEnabled(false);
+        }
+    }
+
+    //Callback that fires when the location changes.
+    // updates LastUpdateTime and calculates the heading
+    @Override
+    public void onLocationChanged(Location location) {
+        mCurrentLocation=location;
+        Calendar c = Calendar.getInstance();
+        mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
+        updateUI();
+        try {
+            calculateHeading();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        Log.i(TAG, "Location is updated");
+    }
+
+    //calculates heading by comparing bearing to destination with current bearing
+    // converts heading to direction
+    private void calculateHeading() throws UnsupportedEncodingException {
+        bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
+        bearingToDest=mod((int)bearingToDest,360);
+        if (bearingToDest<=22.5 || bearingToDest>337.5) {
+            direction = "a";
+        }else if(bearingToDest>22.5 && bearingToDest<=67.5){
+            direction ="ar";
+        }else if(bearingToDest>67.5 && bearingToDest<=112.5){
+            direction ="r";
+        }else if(bearingToDest>112.5 && bearingToDest<=157.5){
+            direction ="br";
+        }else if(bearingToDest>157.5 && bearingToDest<=202.5){
+            direction = "b";
+        }else if(bearingToDest>202.5 && bearingToDest<=247.5){
+            direction = "bl";
+        }else if(bearingToDest>247.5 && bearingToDest<=292.5){
+            direction = "l";
+        }else if(bearingToDest>292.5 && bearingToDest<=337.5){
+            direction = "al";
+        } else {
+            direction = String.valueOf(bearingToDest);
+        }
+        String modeDirection = selectedMode+" "+direction;
+        byte [] value = modeDirection.getBytes("UTF-8");
+        //sends direction to Arduino
+        mService.writeRXCharacteristic(value);
+
+    }
+
+    private int mod(int x, int y)
+    {
+        int result = x % y;
+        return result < 0? result + y : result;
+    }
+
+    /**************************************************************************************
+     * Methods related to UI
+     ***************************************************************************************/
+
+    // enables to switch between Test and Map Fragment
+    public void selectFrag(View v) {
+        Fragment fragment;
+        if (v == findViewById(R.id.test)) {
+            fragment = new FragmentTest();
+        } else {
+            fragment = new FragmentMaps();
+        }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.place_holder, fragment);
+        fragmentTransaction.commit();
+
+    }
+
+    //updates TextViewa of Latitude, Loongitude, LastUpdateTime and Heading
+    private void updateUI() {
+        mLatitudeTextView.setText(String.format("%s: %f", mLatitudeLabel,
+                mCurrentLocation.getLatitude()));
+        mLongitudeTextView.setText(String.format("%s: %f", mLongitudeLabel,
+                mCurrentLocation.getLongitude()));
+        mLastUpdateTimeTextView.setText(String.format("%s: %s", mLastUpdateTimeLabel,
+                mLastUpdateTime));
+        mCurrentHeadingTextView.setText(String.format("%s: %f", mCurrentHeadingLabel,
+                bearingToDest));
+    }
+
+    // if Button of Testfragment is pressed, send the respective direction to Arduino
+    public void ButtonPressed(View v) {
+        String s = v.getTag().toString();
+        s = "Test"+" "+s;
+        byte[] value;
+        try {
+            value = s.getBytes("UTF-8");
+            mService.writeRXCharacteristic(value);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // list of directions is randomly shuffled by taking the System Time as a seed
+    // after shuffling the direction, the start Button for the Test is enabled
+    public void shuffleDirections(View v) {
+        long seed = System.nanoTime();
+        Collections.shuffle(directions,new Random(seed));
+        indexDirections = 0;
+        v.setEnabled(false);
+        Button startNextButton = (Button) findViewById(R.id.start_next_button);
+        startNextButton.setEnabled(true);
+        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
+        currentDirection.setText("");
+        TextView progressTest = (TextView) findViewById(R.id.progress_test);
+        progressTest.setText("");
+    }
+
+    //after pressing the start button, text turns into next
+    // go through the list of shuffled direction
+    // display the current direction and the progress
+    public void startNext (View v){
+        Button b = (Button) v;
+        if(b.getText().equals("Start")){
+            b.setText("Next");
+        }
+        String s = "Test "+ directions.get(indexDirections);
+        byte[] value;
+        try {
+            value = s.getBytes("UTF-8");
+            mService.writeRXCharacteristic(value);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
+        currentDirection.setText(directions.get(indexDirections));
+        TextView progressTest = (TextView) findViewById(R.id.progress_test);
+        progressTest.setText(indexDirections+1 +"/"+directions.size());
+        indexDirections +=1;
+        if(indexDirections >= directions.size()){
+            b.setEnabled(false);
+            b.setText("Start");
+            Button shuffleButton = (Button) findViewById(R.id.shuffle_button);
+            shuffleButton.setEnabled(true);
+        }
+
+    }
+
+    /*******************************************************************************************
+     * General methods like onStart
+     *******************************************************************************************/
 
     @Override
     public void onStart() {
@@ -583,57 +719,6 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-
-            case REQUEST_SELECT_DEVICE:
-                //When the DeviceListActivity return, with the selected device address
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    String deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
-                    mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-
-                    Log.d(TAG, "... onActivityResultdevice.address==" + mDevice + "mserviceValue" + mService);
-                    ((TextView) findViewById(R.id.deviceName)).setText(mDevice.getName() + " - connecting");
-                    mService.connect(deviceAddress);
-
-
-                }
-                break;
-            case REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
-                    Toast.makeText(this, "Bluetooth has turned on ", Toast.LENGTH_SHORT).show();
-
-                } else {
-                    // User did not enable Bluetooth or an error occurred
-                    Log.d(TAG, "BT not enabled");
-                    Toast.makeText(this, "Problem in BT Turning ON ", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                break;
-            default:
-                Log.e(TAG, "wrong request code");
-                break;
-        }
-    }
-
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-    }
-
-
-    private void showMessage(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-
-    }
-
-    @Override
     public void onBackPressed() {
         if (mState == UART_PROFILE_CONNECTED) {
             Intent startMain = new Intent(Intent.ACTION_MAIN);
@@ -657,247 +742,24 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         }
     }
 
-    public void ButtonPressed(View v) {
-        String s = v.getTag().toString();
-        s = "Test"+" "+s;
-        byte[] value;
-        try {
-            value = s.getBytes("UTF-8");
-            mService.writeRXCharacteristic(value);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void selectFrag(View v) {
-        Fragment fragment;
-        if (v == findViewById(R.id.test)) {
-            fragment = new FragmentTest();
-        } else {
-            fragment = new FragmentMaps();
-        }
-
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.place_holder, fragment);
-        fragmentTransaction.commit();
-
+    private void showMessage(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "Connected to GoogleApiClient");
-
-        // If the initial location was never previously requested, we use
-        // FusedLocationApi.getLastLocation() to get it. If it was previously requested, we store
-        // its value in the Bundle and check for it in onCreate(). We
-        // do not request it again unless the user specifically requests location updates by pressing
-        // the Start Updates button.
-        //
-        // Because we cache the value of the initial location in the Bundle, it means that if the
-        // user launches the activity,
-        // moves to a new location, and then changes the device orientation, the original location
-        // is displayed as the activity is re-created.
-        if (mCurrentLocation == null) {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            updateUI();
-        }
-
-        // If the user presses the Start Updates button before GoogleApiClient connects, we set
-        // mRequestingLocationUpdates to true (see startUpdatesButtonHandler()). Here, we check
-        // the value of mRequestingLocationUpdates and if it is true, we start location updates.
-        if (mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        // The connection to Google Play services was lost for some reason. We call connect() to
-        // attempt to re-establish the connection.
-        Log.i(TAG, "Connection suspended");
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
-        // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
-    }
-
-    /**
-     * Handles the Start Updates button and requests start of location updates. Does nothing if
-     * updates have already been requested.
-     */
-    public void startUpdatesButtonHandler(View view) {
-        if (!mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = true;
-            setButtonsEnabledState();
-            startLocationUpdates();
-        }
-    }
-
-    public void stopUpdatesButtonHandler(View view) {
-        if (mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = false;
-            setButtonsEnabledState();
-            stopLocationUpdates();
-        }
-    }
-
-    /**
-     * Callback that fires when the location changes.
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-        mCurrentLocation=location;
-        Calendar c = Calendar.getInstance();
-        mLastUpdateTime = c.get(Calendar.HOUR)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND);
-        //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        updateUI();
-        try {
-            calculateHeading();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        Log.i(TAG, "Location is updated");
-
-    }
-
-
-    protected void startLocationUpdates() {
-        // The final argument to {@code requestLocationUpdates()} is a LocationListener
-        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (LocationListener) this);
-
-    }
-
-    protected void stopLocationUpdates() {
-        // It is a good practice to remove location requests when the activity is in a paused or
-        // stopped state. Doing so helps battery performance and is especially
-        // recommended in applications that request frequent location updates.
-
-        // The final argument to {@code requestLocationUpdates()} is a LocationListener
-        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, (LocationListener) this);
-    }
-
-    /**
-     * Stores activity data in the Bundle.
-     */
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
-        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
-        savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-
-    private void calculateHeading() throws UnsupportedEncodingException {
-
-        bearingToDest = mCurrentLocation.bearingTo(destLocation) - mCurrentLocation.getBearing();
-        bearingToDest=mod((int)bearingToDest,360);
-        if (bearingToDest<=22.5 || bearingToDest>337.5) {
-            direction = "a";
-        }else if(bearingToDest>22.5 && bearingToDest<=67.5){
-            direction ="ar";
-        }else if(bearingToDest>67.5 && bearingToDest<=112.5){
-            direction ="r";
-        }else if(bearingToDest>112.5 && bearingToDest<=157.5){
-            direction ="br";
-        }else if(bearingToDest>157.5 && bearingToDest<=202.5){
-            direction = "b";
-        }else if(bearingToDest>202.5 && bearingToDest<=247.5){
-            direction = "bl";
-        }else if(bearingToDest>247.5 && bearingToDest<=292.5){
-            direction = "l";
-        }else if(bearingToDest>292.5 && bearingToDest<=337.5){
-            direction = "al";
-        } else {
-            direction = String.valueOf(bearingToDest);
-        }
-        //String modeDirection = selectedMode+" "+mCurrentLocation.distanceTo(destLocation)+" "+direction;
-        String modeDirection = selectedMode+" "+direction;
-        byte [] value = modeDirection.getBytes("UTF-8");
-        mService.writeRXCharacteristic(value);
-
-    }
-
-    private int mod(int x, int y)
-    {
-        int result = x % y;
-        return result < 0? result + y : result;
-    }
-
-    public void shuffleDirections(View v) {
-        long seed = System.nanoTime();
-        Collections.shuffle(directions,new Random(seed));
-        indexDirections = 0;
-        v.setEnabled(false);
-        Button startNextButton = (Button) findViewById(R.id.start_next_button);
-        startNextButton.setEnabled(true);
-        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
-        currentDirection.setText("");
-        TextView progressTest = (TextView) findViewById(R.id.progress_test);
-        progressTest.setText("");
-    }
-
-    public void startNext (View v){
-        Button b = (Button) v;
-        if(b.getText().equals("Start")){
-            b.setText("Next");
-        }
-        String s = "Test "+ directions.get(indexDirections);
-        byte[] value;
-        try {
-            value = s.getBytes("UTF-8");
-            mService.writeRXCharacteristic(value);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        TextView currentDirection = (TextView) findViewById(R.id.current_direction);
-        currentDirection.setText(directions.get(indexDirections));
-        TextView progressTest = (TextView) findViewById(R.id.progress_test);
-        progressTest.setText(indexDirections+1 +"/"+directions.size());
-        indexDirections +=1;
-        if(indexDirections >= directions.size()){
-            b.setEnabled(false);
-            b.setText("Start");
-            Button shuffleButton = (Button) findViewById(R.id.shuffle_button);
-            shuffleButton.setEnabled(true);
-        }
-        
-    }
-
-
-
+    /*************************************************************************************************
+     * Method for Logging
+     ************************************************************************************************/
     public void appendLog(String text)
     {
         if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            String fileName = Environment.getExternalStorageDirectory().getAbsolutePath()+"/log.txt,";
+            String fileName = Environment.getExternalStorageDirectory().getAbsolutePath()+"/log.txt";
             File logFile = new File(fileName);
+            //if no log file exist, create a new file
             if (!logFile.exists())
             {
                 try
@@ -912,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
             }
             try
             {
-                //BufferedWriter for performance, true to set append to file flag
+                //append the vibrationinformation to the existing logfile
                 BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
                 buf.append(text);
                 Log.i("VibrationInformation", text + " appended to" + fileName);
@@ -925,10 +787,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 e.printStackTrace();
             }
         }
-
     }
-
-
 }
 
 

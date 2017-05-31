@@ -20,9 +20,6 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by linux on 21.11.16.
- */
 
 public class UartService extends Service {
     private final static String TAG = UartService.class.getSimpleName();
