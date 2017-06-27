@@ -213,19 +213,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // get the selected Mode and attach a change listener to the switch
         mActivePassiveSwitch = (Switch) findViewById(R.id.active_passive_switch);
         if(mActivePassiveSwitch.isChecked()){
-            selectedMode="Active";
+            selectedMode="Pull";
         }
         else{
-            selectedMode="Passive";
+            selectedMode="Push";
         }
         mActivePassiveSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if(isChecked){
-                    selectedMode="Active";
+                    selectedMode="Pull";
                 }
                 else {
-                    selectedMode="Passive";
+                    selectedMode="Push";
                 }
             }
         });
